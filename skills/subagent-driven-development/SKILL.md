@@ -5,33 +5,39 @@ description: Use when executing implementation plans with independent tasks in t
 
 # Subagent-Driven Development
 
-Execute plan by dispatching fresh subagent per task, with two-stage review after each: spec compliance review first, then code quality review.
+Execute plan by dispatching fresh subagent per task. Review depth is tiered to task risk — routine tasks rely on implementer self-review, standard tasks get a single combined review, and high-risk tasks get the full two-stage review.
 
 **Why subagents:** You delegate tasks to specialized agents with isolated context. By precisely crafting their instructions and context, you ensure they stay focused and succeed at their task. They should never inherit your session's context or history — you construct exactly what they need. This also preserves your own context for coordination work.
 
-**Core principle:** Fresh subagent per task + two-stage review (spec then quality) = high quality, fast iteration
+**Core principle:** Fresh subagent per task + review depth matched to task risk = high quality without ceremony tax.
+
+## Review Tiers
+
+Pick the lightest tier the task can defensibly take. Default to **Standard** when unsure.
+
+**Routine** — implementer self-review only:
+- 1-2 files, mechanical change (rename, dep bump, typo, format)
+- Complete spec, no design judgment
+- Cheap to verify by running tests
+
+**Standard** (default) — one combined spec+quality review:
+- Multi-file or non-trivial logic
+- Implementer is following an unambiguous task in the plan
+- Dispatch a single reviewer with both `./spec-reviewer-prompt.md` and `./code-quality-reviewer-prompt.md` concerns merged into one prompt
+
+**High-risk** — full two-stage review (spec first, then code quality):
+- Touches security, auth, data integrity, payment, or migrations
+- Introduces new architecture or cross-cutting patterns
+- Implementer reported `DONE_WITH_CONCERNS`
+- Previous tasks in this plan have surfaced quality issues
+
+When you escalate a task to a higher tier, note why in your TodoWrite item so the human can sanity-check your judgment later.
 
 **Continuous execution:** Do not pause to check in with your human partner between tasks. Execute all tasks from the plan without stopping. The only reasons to stop are: BLOCKED status you cannot resolve, ambiguity that genuinely prevents progress, or all tasks complete. "Should I continue?" prompts and progress summaries waste their time — they asked you to execute the plan, so execute it.
 
 ## When to Use
 
-```dot
-digraph when_to_use {
-    "Have implementation plan?" [shape=diamond];
-    "Tasks mostly independent?" [shape=diamond];
-    "Stay in this session?" [shape=diamond];
-    "subagent-driven-development" [shape=box];
-    "executing-plans" [shape=box];
-    "Manual execution or brainstorm first" [shape=box];
-
-    "Have implementation plan?" -> "Tasks mostly independent?" [label="yes"];
-    "Have implementation plan?" -> "Manual execution or brainstorm first" [label="no"];
-    "Tasks mostly independent?" -> "Stay in this session?" [label="yes"];
-    "Tasks mostly independent?" -> "Manual execution or brainstorm first" [label="no - tightly coupled"];
-    "Stay in this session?" -> "subagent-driven-development" [label="yes"];
-    "Stay in this session?" -> "executing-plans" [label="no - parallel session"];
-}
-```
+Use **subagent-driven-development** when you have an implementation plan, the tasks are mostly independent, and you want to stay in this session. If the tasks are tightly coupled or you don't have a plan yet, fall back to manual execution or brainstorm first. If you want to hand off to a parallel session instead, use **executing-plans**.
 
 **vs. Executing Plans (parallel session):**
 - Same session (no context switch)
@@ -41,48 +47,17 @@ digraph when_to_use {
 
 ## The Process
 
-```dot
-digraph process {
-    rankdir=TB;
-
-    subgraph cluster_per_task {
-        label="Per Task";
-        "Dispatch implementer subagent (./implementer-prompt.md)" [shape=box];
-        "Implementer subagent asks questions?" [shape=diamond];
-        "Answer questions, provide context" [shape=box];
-        "Implementer subagent implements, tests, commits, self-reviews" [shape=box];
-        "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" [shape=box];
-        "Spec reviewer subagent confirms code matches spec?" [shape=diamond];
-        "Implementer subagent fixes spec gaps" [shape=box];
-        "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [shape=box];
-        "Code quality reviewer subagent approves?" [shape=diamond];
-        "Implementer subagent fixes quality issues" [shape=box];
-        "Mark task complete in TodoWrite" [shape=box];
-    }
-
-    "Read plan, extract all tasks with full text, note context, create TodoWrite" [shape=box];
-    "More tasks remain?" [shape=diamond];
-    "Dispatch final code reviewer subagent for entire implementation" [shape=box style=filled fillcolor=lightgreen];
-
-    "Read plan, extract all tasks with full text, note context, create TodoWrite" -> "Dispatch implementer subagent (./implementer-prompt.md)";
-    "Dispatch implementer subagent (./implementer-prompt.md)" -> "Implementer subagent asks questions?";
-    "Implementer subagent asks questions?" -> "Answer questions, provide context" [label="yes"];
-    "Answer questions, provide context" -> "Dispatch implementer subagent (./implementer-prompt.md)";
-    "Implementer subagent asks questions?" -> "Implementer subagent implements, tests, commits, self-reviews" [label="no"];
-    "Implementer subagent implements, tests, commits, self-reviews" -> "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)";
-    "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" -> "Spec reviewer subagent confirms code matches spec?";
-    "Spec reviewer subagent confirms code matches spec?" -> "Implementer subagent fixes spec gaps" [label="no"];
-    "Implementer subagent fixes spec gaps" -> "Dispatch spec reviewer subagent (./spec-reviewer-prompt.md)" [label="re-review"];
-    "Spec reviewer subagent confirms code matches spec?" -> "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [label="yes"];
-    "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" -> "Code quality reviewer subagent approves?";
-    "Code quality reviewer subagent approves?" -> "Implementer subagent fixes quality issues" [label="no"];
-    "Implementer subagent fixes quality issues" -> "Dispatch code quality reviewer subagent (./code-quality-reviewer-prompt.md)" [label="re-review"];
-    "Code quality reviewer subagent approves?" -> "Mark task complete in TodoWrite" [label="yes"];
-    "Mark task complete in TodoWrite" -> "More tasks remain?";
-    "More tasks remain?" -> "Dispatch implementer subagent (./implementer-prompt.md)" [label="yes"];
-    "More tasks remain?" -> "Dispatch final code reviewer subagent for entire implementation" [label="no"];
-}
-```
+1. Read the plan once, extract all tasks with their full text and surrounding context, and create a TodoWrite list. For each task, decide its review tier (Routine / Standard / High-risk — see above) and record it on the todo.
+2. For each task in order:
+   1. Dispatch the implementer subagent using `./implementer-prompt.md`.
+   2. If the implementer asks questions, answer them and re-dispatch with the new context.
+   3. Otherwise let the implementer implement, test, commit, and self-review.
+   4. Run reviews per the task's tier:
+      - **Routine:** no review subagent. Trust implementer self-review + passing tests. If the implementer reported `DONE_WITH_CONCERNS`, escalate this task to Standard.
+      - **Standard:** dispatch one combined reviewer covering both spec compliance and code quality (merge `./spec-reviewer-prompt.md` and `./code-quality-reviewer-prompt.md` into a single prompt). If it finds issues, the implementer fixes them and the reviewer re-reviews until approved.
+      - **High-risk:** dispatch the spec reviewer first using `./spec-reviewer-prompt.md`. After it approves, dispatch the code quality reviewer using `./code-quality-reviewer-prompt.md`. Re-review until both approve.
+   5. Mark the task complete in TodoWrite.
+3. After every task is complete, dispatch a final code reviewer subagent over the entire implementation.
 
 ## Model Selection
 
@@ -220,32 +195,32 @@ Done!
 
 **Quality gates:**
 - Self-review catches issues before handoff
-- Two-stage review: spec compliance, then code quality
+- Review depth matched to task risk: Routine (self-review only), Standard (one combined review), High-risk (two-stage spec then quality)
 - Review loops ensure fixes actually work
 - Spec compliance prevents over/under-building
 - Code quality ensures implementation is well-built
 
 **Cost:**
-- More subagent invocations (implementer + 2 reviewers per task)
-- Controller does more prep work (extracting all tasks upfront)
-- Review loops add iterations
-- But catches issues early (cheaper than debugging later)
+- Tiered reviews keep cost proportional to risk — most tasks get 0-1 reviewer dispatches, not 2
+- Controller does more prep work (extracting all tasks + assigning tiers upfront)
+- Review loops add iterations when issues surface
+- Still catches issues early on the tasks where it matters (cheaper than debugging later)
 
 ## Red Flags
 
 **Never:**
 - Start implementation on main/master branch without explicit user consent
-- Skip reviews (spec compliance OR code quality)
+- Skip the review tier the task earned (Routine is a tier, not a skip — but Standard/High-risk tasks MUST get their review)
 - Proceed with unfixed issues
 - Dispatch multiple implementation subagents in parallel (conflicts)
 - Make subagent read plan file (provide full text instead)
 - Skip scene-setting context (subagent needs to understand where task fits)
 - Ignore subagent questions (answer before letting them proceed)
-- Accept "close enough" on spec compliance (spec reviewer found issues = not done)
+- Accept "close enough" on spec compliance (reviewer found issues = not done)
 - Skip review loops (reviewer found issues = implementer fixes = review again)
-- Let implementer self-review replace actual review (both are needed)
-- **Start code quality review before spec compliance is ✅** (wrong order)
-- Move to next task while either review has open issues
+- **In High-risk tier: start code quality review before spec compliance is ✅** (wrong order)
+- Move to next task while review has open issues
+- Downgrade a task's tier to dodge work — if you're tempted to call a Standard task "Routine," it isn't
 
 **If subagent asks questions:**
 - Answer clearly and completely

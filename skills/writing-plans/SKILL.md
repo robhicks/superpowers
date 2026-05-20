@@ -119,17 +119,15 @@ Every step must contain the actual content an engineer needs. These are **plan f
 - Exact commands with expected output
 - DRY, YAGNI, TDD, frequent commits
 
-## Self-Review
+## Plan Quality (inline while writing)
 
-After writing the complete plan, look at the spec with fresh eyes and check the plan against it. This is a checklist you run yourself — not a subagent dispatch.
+As you write each task, keep these in mind so you don't have to do a separate review pass:
 
-**1. Spec coverage:** Skim each section/requirement in the spec. Can you point to a task that implements it? List any gaps.
+- **Spec coverage:** Every spec requirement should map to a task. If you're nearing the end and a requirement is uncovered, add a task for it.
+- **No placeholders:** Catch the "No Placeholders" patterns above as you write each step — don't write "TBD" or "similar to Task N" expecting to fix it later.
+- **Type consistency:** When you reference a function/type/property in a later task, double-check the exact name from where you defined it earlier. A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
 
-**2. Placeholder scan:** Search your plan for red flags — any of the patterns from the "No Placeholders" section above. Fix them.
-
-**3. Type consistency:** Do the types, method signatures, and property names you used in later tasks match what you defined in earlier tasks? A function called `clearLayers()` in Task 3 but `clearFullLayers()` in Task 7 is a bug.
-
-If you find issues, fix them inline. No need to re-review — just fix and move on. If you find a spec requirement with no task, add the task.
+No formal review pass — fix issues as you spot them.
 
 ## Execution Handoff
 

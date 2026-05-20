@@ -5,12 +5,13 @@ Use this template when dispatching a code reviewer subagent.
 **Purpose:** Review completed work against requirements and code quality standards before it cascades into more work.
 
 ```
-Task tool (general-purpose):
+Task tool (subagent_type: "superpowers:code-reviewer"):
   description: "Review code changes"
   prompt: |
-    You are a Senior Code Reviewer with expertise in software architecture,
-    design patterns, and best practices. Your job is to review completed work
-    against its plan or requirements and identify issues before they cascade.
+    Review the completed work below against its plan or requirements and
+    identify issues before they cascade. You are the superpowers:code-reviewer
+    agent — apply your standard confidence-scored review process (≥80 reported)
+    and use the output format described below in addition to your defaults.
 
     ## What Was Implemented
 

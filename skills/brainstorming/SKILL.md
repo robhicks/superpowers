@@ -7,61 +7,47 @@ description: "You MUST use this before any creative work - creating features, bu
 
 Help turn ideas into fully formed designs and specs through natural collaborative dialogue.
 
-Start by understanding the current project context, then ask questions one at a time to refine the idea. Once you understand what you're building, present the design and get user approval.
+Start by understanding the current project context. Ask only the questions that genuinely matter — and ask them batched into one or two messages, not dripped out one at a time. Once you understand what you're building, present the design and get user approval.
 
 <HARD-GATE>
-Do NOT invoke any implementation skill, write any code, scaffold any project, or take any implementation action until you have presented a design and the user has approved it. This applies to EVERY project regardless of perceived simplicity.
+Do NOT invoke any implementation skill, write any code, scaffold any project, or take any implementation action until you have presented a design (or a Fast Path proposal — see below) and the user has approved it. This applies to EVERY project regardless of perceived simplicity.
 </HARD-GATE>
 
-## Anti-Pattern: "This Is Too Simple To Need A Design"
+## Fast Path: Skip the Spec
 
-Every project goes through this process. A todo list, a single-function utility, a config change — all of them. "Simple" projects are where unexamined assumptions cause the most wasted work. The design can be short (a few sentences for truly simple projects), but you MUST present it and get approval.
+The full Q&A → spec doc → review loop is appropriate when requirements are ambiguous or design decisions remain. When they don't, the spec phase is overhead, not safety. Choose the lightest path that still gives the work the discipline it needs.
 
-## Checklist
+**Skip the spec** when ALL of these hold:
+- The user's request specifies what to build clearly enough that no design decisions remain
+- Scope is bounded — one component, no architectural choices, no fan-out to sub-projects
+- A reasonable engineer could pick a single sensible approach without further consultation
 
-You MUST create a task for each of these items and complete them in order:
+Procedure:
+1. State your understanding in one paragraph: "I'll [description]. Skipping spec, going straight to plan. Confirm?"
+2. Wait for user confirmation. If they push back or surface a design question, fall back to the full checklist.
+3. Invoke `superpowers:writing-plans` directly.
+
+**Skip the plan too** for changes so small a plan doc is overhead — single-file edit, mechanical rename, dependency bump, typo, fully-specified one-shot fix:
+1. State the exact change: "I'll [exact action] in [file(s)]. Confirm?"
+2. Wait for confirmation.
+3. Implement. Verify.
+
+**The HARD-GATE still applies on every path.** The Fast Path replaces the design *document* with a shorter proposal — it does NOT skip the approval gate. You always present the proposal and get explicit user approval before touching code.
+
+**Anti-rationalization check.** "Simple" projects are where unexamined assumptions cause the most wasted work. If you're stretching the criteria — "well, it's only two components" or "the user probably means…" — take the heavier path. A 30-second clarifying question is cheaper than building the wrong thing. When in doubt, brainstorm.
+
+## Full Checklist
+
+If the Fast Path doesn't apply, follow the full flow. Create a task for each item and complete them in order:
 
 1. **Explore project context** — check files, docs, recent commits
 2. **Offer visual companion** (if topic will involve visual questions) — this is its own message, not combined with a clarifying question. See the Visual Companion section below.
-3. **Ask clarifying questions** — one at a time, understand purpose/constraints/success criteria
+3. **Ask clarifying questions** — batched into one message when possible; focus on purpose/constraints/success criteria
 4. **Propose 2-3 approaches** — with trade-offs and your recommendation
 5. **Present design** — in sections scaled to their complexity, get user approval after each section
-6. **Write design doc** — save to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` and commit
-7. **Spec self-review** — quick inline check for placeholders, contradictions, ambiguity, scope (see below)
-8. **User reviews written spec** — ask user to review the spec file before proceeding
-9. **Transition to implementation** — invoke writing-plans skill to create implementation plan
-
-## Process Flow
-
-```dot
-digraph brainstorming {
-    "Explore project context" [shape=box];
-    "Visual questions ahead?" [shape=diamond];
-    "Offer Visual Companion\n(own message, no other content)" [shape=box];
-    "Ask clarifying questions" [shape=box];
-    "Propose 2-3 approaches" [shape=box];
-    "Present design sections" [shape=box];
-    "User approves design?" [shape=diamond];
-    "Write design doc" [shape=box];
-    "Spec self-review\n(fix inline)" [shape=box];
-    "User reviews spec?" [shape=diamond];
-    "Invoke writing-plans skill" [shape=doublecircle];
-
-    "Explore project context" -> "Visual questions ahead?";
-    "Visual questions ahead?" -> "Offer Visual Companion\n(own message, no other content)" [label="yes"];
-    "Visual questions ahead?" -> "Ask clarifying questions" [label="no"];
-    "Offer Visual Companion\n(own message, no other content)" -> "Ask clarifying questions";
-    "Ask clarifying questions" -> "Propose 2-3 approaches";
-    "Propose 2-3 approaches" -> "Present design sections";
-    "Present design sections" -> "User approves design?";
-    "User approves design?" -> "Present design sections" [label="no, revise"];
-    "User approves design?" -> "Write design doc" [label="yes"];
-    "Write design doc" -> "Spec self-review\n(fix inline)";
-    "Spec self-review\n(fix inline)" -> "User reviews spec?";
-    "User reviews spec?" -> "Write design doc" [label="changes requested"];
-    "User reviews spec?" -> "Invoke writing-plans skill" [label="approved"];
-}
-```
+6. **Write design doc** — save to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` and commit. As you write, watch for placeholders/TBDs, internal contradictions, and ambiguous requirements; fix them inline. No separate self-review pass.
+7. **User reviews written spec** — ask user to review the spec file before proceeding
+8. **Transition to implementation** — invoke writing-plans skill to create implementation plan
 
 **The terminal state is invoking writing-plans.** Do NOT invoke frontend-design, mcp-builder, or any other implementation skill. The ONLY skill you invoke after brainstorming is writing-plans.
 
@@ -72,9 +58,9 @@ digraph brainstorming {
 - Check out the current project state first (files, docs, recent commits)
 - Before asking detailed questions, assess scope: if the request describes multiple independent subsystems (e.g., "build a platform with chat, file storage, billing, and analytics"), flag this immediately. Don't spend questions refining details of a project that needs to be decomposed first.
 - If the project is too large for a single spec, help the user decompose into sub-projects: what are the independent pieces, how do they relate, what order should they be built? Then brainstorm the first sub-project through the normal design flow. Each sub-project gets its own spec → plan → implementation cycle.
-- For appropriately-scoped projects, ask questions one at a time to refine the idea
+- For appropriately-scoped projects, batch your clarifying questions into a single message — don't drip them out one at a time
 - Prefer multiple choice questions when possible, but open-ended is fine too
-- Only one question per message - if a topic needs more exploration, break it into multiple questions
+- Ask only the questions you genuinely need answered to design well; do not pad with nice-to-have questions
 - Focus on understanding: purpose, constraints, success criteria
 
 **Exploring approaches:**
@@ -113,22 +99,21 @@ digraph brainstorming {
 - Use elements-of-style:writing-clearly-and-concisely skill if available
 - Commit the design document to git
 
-**Spec Self-Review:**
-After writing the spec document, look at it with fresh eyes:
+**Spec Quality (inline while writing):**
+As you write the spec, watch for and fix in-place:
+- Placeholders ("TBD", "TODO", incomplete sections, vague requirements)
+- Internal contradictions or architecture that doesn't match the feature description
+- Scope creep — if it sprawls into multiple subsystems, decompose
+- Ambiguous requirements — pick one interpretation and make it explicit
 
-1. **Placeholder scan:** Any "TBD", "TODO", incomplete sections, or vague requirements? Fix them.
-2. **Internal consistency:** Do any sections contradict each other? Does the architecture match the feature descriptions?
-3. **Scope check:** Is this focused enough for a single implementation plan, or does it need decomposition?
-4. **Ambiguity check:** Could any requirement be interpreted two different ways? If so, pick one and make it explicit.
-
-Fix any issues inline. No need to re-review — just fix and move on.
+This is something you do *while writing*, not a separate pass after.
 
 **User Review Gate:**
-After the spec review loop passes, ask the user to review the written spec before proceeding:
+Once the spec is written, ask the user to review it before proceeding:
 
 > "Spec written and committed to `<path>`. Please review it and let me know if you want to make any changes before we start writing out the implementation plan."
 
-Wait for the user's response. If they request changes, make them and re-run the spec review loop. Only proceed once the user approves.
+Wait for the user's response. If they request changes, make them and ask again. Only proceed once the user approves.
 
 **Implementation:**
 
@@ -137,7 +122,7 @@ Wait for the user's response. If they request changes, make them and re-run the 
 
 ## Key Principles
 
-- **One question at a time** - Don't overwhelm with multiple questions
+- **Batch clarifying questions** - Ask all your real unknowns in one message. Don't drip them out one at a time.
 - **Multiple choice preferred** - Easier to answer than open-ended when possible
 - **YAGNI ruthlessly** - Remove unnecessary features from all designs
 - **Explore alternatives** - Always propose 2-3 approaches before settling
