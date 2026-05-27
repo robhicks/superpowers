@@ -15,7 +15,7 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 **Context:** If working in an isolated worktree, it should have been created via the `superpowers:using-git-worktrees` skill at execution time.
 
-**Save plans to:** `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
+**Publish the plan per `./publishing-specs-and-plans.md`.** That doc routes the plan to a JIRA ticket comment if a ticket key is available, else a GitHub issue (a comment on the spec's issue, or a new issue on the Fast Path), else the legacy local file `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md` committed to git. When a tracker is used, a throwaway working copy is written to the git scratch dir — that path (not a repo path) is what you hand to the executor.
 - (User preferences for plan location override this default)
 
 ## Scope Check
@@ -131,9 +131,11 @@ No formal review pass — fix issues as you spot them.
 
 ## Execution Handoff
 
-After saving the plan, offer execution choice:
+After publishing the plan (see `./publishing-specs-and-plans.md`), offer the execution choice. Report where it landed and the local working copy the executor will read:
 
-**"Plan complete and saved to `docs/superpowers/plans/<filename>.md`. Two execution options:**
+**"Plan complete and posted to `<JIRA ticket URL / GitHub issue URL>` (local working copy: `<scratch path>`). Two execution options:**
+
+(Local fallback: "Plan complete and saved to `docs/superpowers/plans/<filename>.md`.")
 
 **1. Subagent-Driven (recommended)** - I dispatch a fresh subagent per task, review between tasks, fast iteration
 

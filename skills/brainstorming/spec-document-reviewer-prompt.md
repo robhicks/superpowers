@@ -4,7 +4,7 @@ Use this template when dispatching a spec document reviewer subagent.
 
 **Purpose:** Verify the spec is complete, consistent, and ready for implementation planning.
 
-**Dispatch after:** Spec document is written to docs/superpowers/specs/
+**Dispatch after:** Spec document is published (JIRA ticket, GitHub issue, or local file — see `skills/writing-plans/publishing-specs-and-plans.md`). Pass the local working-copy path as `[SPEC_FILE_PATH]` so the reviewer can read it.
 
 ```
 Task tool (general-purpose):

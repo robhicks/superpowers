@@ -45,7 +45,7 @@ If the Fast Path doesn't apply, follow the full flow. Create a task for each ite
 3. **Ask clarifying questions** — batched into one message when possible; focus on purpose/constraints/success criteria
 4. **Propose 2-3 approaches** — with trade-offs and your recommendation
 5. **Present design** — in sections scaled to their complexity, get user approval after each section
-6. **Write design doc** — save to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` and commit. As you write, watch for placeholders/TBDs, internal contradictions, and ambiguous requirements; fix them inline. No separate self-review pass.
+6. **Write & publish design doc** — route per `skills/writing-plans/publishing-specs-and-plans.md` (JIRA ticket → GitHub issue → local committed file). As you write, watch for placeholders/TBDs, internal contradictions, and ambiguous requirements; fix them inline. No separate self-review pass.
 7. **User reviews written spec** — ask user to review the spec file before proceeding
 8. **Transition to implementation** — invoke writing-plans skill to create implementation plan
 
@@ -94,10 +94,9 @@ If the Fast Path doesn't apply, follow the full flow. Create a task for each ite
 
 **Documentation:**
 
-- Write the validated design (spec) to `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
+- **Publish the validated design (spec) per `skills/writing-plans/publishing-specs-and-plans.md`.** That doc decides the destination: a JIRA ticket comment if a ticket key is available, else a new GitHub issue if an `origin` remote points at GitHub, else the legacy local file `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md` committed to git. Do NOT commit a spec file into the repo when a tracker is used — the tracker is the record, and a throwaway working copy goes in the git scratch dir.
   - (User preferences for spec location override this default)
 - Use elements-of-style:writing-clearly-and-concisely skill if available
-- Commit the design document to git
 
 **Spec Quality (inline while writing):**
 As you write the spec, watch for and fix in-place:
@@ -109,9 +108,11 @@ As you write the spec, watch for and fix in-place:
 This is something you do *while writing*, not a separate pass after.
 
 **User Review Gate:**
-Once the spec is written, ask the user to review it before proceeding:
+Once the spec is published, ask the user to review it before proceeding. Point them at wherever it actually landed:
 
-> "Spec written and committed to `<path>`. Please review it and let me know if you want to make any changes before we start writing out the implementation plan."
+> "Spec posted to `<JIRA ticket URL / GitHub issue URL>` (local working copy: `<scratch path>`). Please review it and let me know if you want to make any changes before we start writing out the implementation plan."
+
+For the local fallback, use the legacy wording instead: "Spec written and committed to `<path>`. Please review it…"
 
 Wait for the user's response. If they request changes, make them and ask again. Only proceed once the user approves.
 
